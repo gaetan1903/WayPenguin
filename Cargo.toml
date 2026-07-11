@@ -1,0 +1,14 @@
+[workspace]
+resolver = "2"
+members = [
+    "waypenguin-core",
+    "waypenguin-renderer",
+    "waypenguin-backends",
+    "waypenguin-backends/kde",
+    "waypenguin-backends/gnome",
+    "waypenguin-backends/hyprland",
+    "waypenguin-assets",
+    "waypenguin-cli",
+    "waypenguin-settings",
+    "waypenguin-daemon",
+]

@@ -1,0 +1,12 @@
+[package]
+name = "waypenguin-daemon"
+version = "0.1.0"
+edition = "2021"
+default-run = "waypenguin-daemon"
+
+[dependencies]
+waypenguin-core = { path = "../waypenguin-core" }
+waypenguin-renderer = { path = "../waypenguin-renderer" }
+waypenguin-backends = { path = "../waypenguin-backends" }
+waypenguin-kde = { path = "../waypenguin-backends/kde" }
+waypenguin-assets = { path = "../waypenguin-assets" }

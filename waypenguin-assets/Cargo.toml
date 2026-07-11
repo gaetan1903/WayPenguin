@@ -1,0 +1,9 @@
+[package]
+name = "waypenguin-assets"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+resvg = "0.45"
+usvg = "0.45"
+tiny-skia = "0.11"
