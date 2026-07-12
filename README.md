@@ -15,7 +15,7 @@ Tux the penguin walks, runs, sleeps, and follows your cursor on KDE Plasma 6, wi
 
 | Project Status | Value |
 |---|---|
-| **Version** | v0.2.0 |
+| **Version** | v0.2.1 |
 | **Maturity** | Alpha |
 | **Language** | Rust (edition 2021) |
 | **License** | MIT |

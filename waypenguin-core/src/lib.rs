@@ -234,6 +234,7 @@ pub struct Pet {
     pub squish_time_ms: u32,
     pub float_timer_ms: u32,
     pub action_time_ms: u32,
+    pub sleep_time_ms: u32,
     pub width: f32,
 }
 
@@ -278,6 +279,7 @@ impl Pet {
             squish_time_ms: 0,
             float_timer_ms: 0,
             action_time_ms: 0,
+            sleep_time_ms: 0,
             width: 64.0,
         }
     }
@@ -322,6 +324,7 @@ impl Pet {
             squish_time_ms: 0,
             float_timer_ms: 0,
             action_time_ms: 0,
+            sleep_time_ms: 0,
             width: 64.0,
         }
     }
@@ -691,44 +694,60 @@ impl Pet {
         let cursor_moved =
             cursor_known && (dx_cursor * dx_cursor + dy_cursor * dy_cursor).sqrt() > 1.0;
 
-        if cursor_moved {
-            self.idle_time_ms = 0;
-            self.wander_timer_ms = 1000 + fastrand::u32(0..2000);
+        if cursor_known {
             self.cursor_x = cursor_x;
             self.cursor_y = cursor_y;
+        }
 
-            let dist_to_cursor = {
-                let dx = self.cursor_x - self.x;
-                let dy = self.cursor_y - self.y;
-                (dx * dx + dy * dy).sqrt()
-            };
-
-            let cursor_speed =
-                (dx_cursor * dx_cursor + dy_cursor * dy_cursor).sqrt() / (dt_ms as f32).max(1.0);
-
-            if cursor_speed > 0.3 || self.state == PetState::Sleep {
-                self.speed = 6.0 * self.archetype.speed_multiplier;
-                self.state = PetState::Run;
-                self.target_x = self.cursor_x;
-                self.target_y = self.floor_y;
-                self.float_base_y = 0.0;
-            } else if dist_to_cursor > 100.0 {
-                self.speed = 2.0 * self.archetype.speed_multiplier;
-                self.state = PetState::Walk;
-                self.target_x = self.cursor_x;
-                self.target_y = self.floor_y;
-                self.float_base_y = 0.0;
-            } else {
-                self.speed = 0.0;
-                self.state = PetState::Idle;
-                self.target_x = self.x;
-                self.target_y = self.y;
-                self.float_base_y = 0.0;
-            }
+        // Pets are scared of the cursor: flee when it comes within scare_radius.
+        // This takes priority over all idle/wander decisions.
+        const SCARE_RADIUS: f32 = 150.0;
+        let scared = if cursor_known {
+            let center_x = self.x + self.width * 0.5;
+            let center_y = self.y + self.width * 0.5;
+            let dx = cursor_x - center_x;
+            let dy = cursor_y - center_y;
+            let near_pet_center = (dx * dx + dy * dy).sqrt() < SCARE_RADIUS;
+            let cursor_over_pet = cursor_x >= self.x
+                && cursor_x <= self.x + self.width
+                && cursor_y >= self.y
+                && cursor_y <= self.y + self.width;
+            near_pet_center || cursor_over_pet
         } else {
-            if cursor_known {
-                self.cursor_x = cursor_x;
-                self.cursor_y = cursor_y;
+            false
+        };
+
+        if scared {
+            self.idle_time_ms = 0;
+            self.wander_timer_ms = 1500 + fastrand::u32(0..1000);
+            let flee_dir: f32 = if self.x >= cursor_x { 1.0 } else { -1.0 };
+            let flee_dist = 180.0 + fastrand::f32() * 120.0;
+            let margin = 20.0;
+            let left_x = margin;
+            let right_x = self.screen_w - self.width - margin;
+            let mut flee_x = (self.x + flee_dir * flee_dist).clamp(left_x, right_x);
+
+            // If corner-clamped target is effectively current position, force an
+            // escape target on the opposite side so the pet does not look frozen.
+            if (flee_x - self.x).abs() < 24.0 {
+                flee_x = if self.x < self.screen_w * 0.5 {
+                    right_x
+                } else {
+                    left_x
+                };
+            }
+
+            self.speed = 6.0 * self.archetype.speed_multiplier;
+            self.state = PetState::Run;
+            self.target_x = flee_x;
+            self.target_y = self.floor_y;
+            self.float_base_y = 0.0;
+        } else {
+            // Wake from sleep when cursor moves nearby (but outside scare radius).
+            if cursor_moved && self.state == PetState::Sleep {
+                self.idle_time_ms = 0;
+                self.state = PetState::Wake;
+                self.speed = 1.0;
             }
 
             if self.state == PetState::Idle || self.state == PetState::Wander {
@@ -782,19 +801,29 @@ impl Pet {
                         PetState::Wander => {
                             let margin = 40.0;
                             let rx = self.screen_w - 2.0 * margin - self.width;
-                            // Pick position farthest from other pets
-                            let mut best_tx = margin + fastrand::f32() * rx;
-                            let mut best_dist = 0.0f32;
-                            for _ in 0..6 {
-                                let tx = margin + fastrand::f32() * rx;
-                                let min_dist = others
-                                    .iter()
-                                    .map(|&(ox, oy)| {
-                                        let dx = tx - ox;
-                                        let dy = self.floor_y - oy;
-                                        dx * dx + dy * dy
-                                    })
-                                    .fold(f32::MAX, f32::min);
+                            // Candidates: random positions + both corners so pets fill
+                            // all edges rather than clustering on one side.
+                            let mut candidates: Vec<f32> = (0..6)
+                                .map(|_| margin + fastrand::f32() * rx)
+                                .collect();
+                            candidates.push(margin);
+                            candidates.push(self.screen_w - self.width - margin);
+                            // Pick the candidate farthest from all other pets.
+                            let mut best_tx = candidates[0];
+                            let mut best_dist = -1.0f32;
+                            for &tx in &candidates {
+                                let min_dist = if others.is_empty() {
+                                    f32::MAX
+                                } else {
+                                    others
+                                        .iter()
+                                        .map(|&(ox, oy)| {
+                                            let dx = tx - ox;
+                                            let dy = self.floor_y - oy;
+                                            dx * dx + dy * dy
+                                        })
+                                        .fold(f32::MAX, f32::min)
+                                };
                                 if min_dist > best_dist {
                                     best_dist = min_dist;
                                     best_tx = tx;
@@ -880,12 +909,63 @@ impl Pet {
             }
         }
 
-        if self.state == PetState::Idle {
+        if self.state == PetState::Sleep {
+            self.sleep_time_ms += dt_ms;
+            if self.sleep_time_ms > 6000 + fastrand::u32(0..4000) {
+                self.state = PetState::Idle;
+                self.speed = 0.0;
+                self.idle_time_ms = 0;
+                self.sleep_time_ms = 0;
+                self.wander_timer_ms = 0;
+            }
+        } else if self.state == PetState::Idle {
             self.idle_time_ms += dt_ms;
-            if self.idle_time_ms > self.archetype.sleep_timeout_ms {
+
+            // Watchdog: if a grounded pet sits too long at the floor, force a
+            // wander burst so it does not look frozen.
+            if self.grounded && (self.y - self.floor_y).abs() < 2.0 && self.idle_time_ms > 4500 {
+                let margin = 40.0;
+                let rx = self.screen_w - 2.0 * margin - self.width;
+                let mut candidates: Vec<f32> = (0..5)
+                    .map(|_| margin + fastrand::f32() * rx)
+                    .collect();
+                candidates.push(margin);
+                candidates.push(self.screen_w - self.width - margin);
+
+                let mut best_tx = candidates[0];
+                let mut best_dist = -1.0f32;
+                for &tx in &candidates {
+                    let min_dist = if others.is_empty() {
+                        f32::MAX
+                    } else {
+                        others
+                            .iter()
+                            .map(|&(ox, oy)| {
+                                let dx = tx - ox;
+                                let dy = self.floor_y - oy;
+                                dx * dx + dy * dy
+                            })
+                            .fold(f32::MAX, f32::min)
+                    };
+                    if min_dist > best_dist {
+                        best_dist = min_dist;
+                        best_tx = tx;
+                    }
+                }
+
+                self.target_x = best_tx;
+                self.target_y = self.floor_y;
+                self.speed = (1.8 + fastrand::f32() * 1.4) * self.archetype.speed_multiplier;
+                self.state = PetState::Wander;
+                self.wander_timer_ms = 1800 + fastrand::u32(0..2200);
+                self.idle_time_ms = 0;
+            } else if self.idle_time_ms > self.archetype.sleep_timeout_ms {
                 self.state = PetState::Sleep;
                 self.speed = 0.0;
+                self.sleep_time_ms = 0;
             }
+        } else {
+            self.sleep_time_ms = 0;
         }
 
         self.constrain_to_screen();
