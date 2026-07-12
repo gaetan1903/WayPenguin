@@ -26,6 +26,65 @@ Tux the penguin walks, runs, sleeps, and follows your cursor on KDE Plasma 6, wi
 cargo run --bin waypenguin-daemon
 ```
 
+## Install from GitHub Releases (DEB/RPM)
+
+Use these steps when you publish release packages on GitHub.
+
+1. Open the Releases page and choose a tag (example: v0.1.0).
+2. Download the package matching your distro and CPU architecture.
+3. Install with your package manager.
+
+### Debian / Ubuntu (.deb)
+
+Install runtime dependencies (first time only):
+
+```bash
+sudo apt update
+sudo apt install -y libwayland-client0 libwayland-cursor0 libxkbcommon0
+```
+
+Download and install the release package:
+
+```bash
+TAG="v0.1.0"
+curl -fLO "https://github.com/<owner>/<repo>/releases/download/${TAG}/waypenguin_${TAG#v}_amd64.deb"
+sudo apt install -y "./waypenguin_${TAG#v}_amd64.deb"
+```
+
+### Fedora / RHEL / Rocky / AlmaLinux (.rpm)
+
+Install runtime dependencies (first time only):
+
+```bash
+sudo dnf install -y wayland libxkbcommon
+```
+
+Download and install the release package:
+
+```bash
+TAG="v0.1.0"
+curl -fLO "https://github.com/<owner>/<repo>/releases/download/${TAG}/waypenguin-${TAG#v}-1.x86_64.rpm"
+sudo dnf install -y "./waypenguin-${TAG#v}-1.x86_64.rpm"
+```
+
+### Run after installation
+
+```bash
+waypenguin-daemon
+```
+
+### Update and uninstall
+
+```bash
+# Debian / Ubuntu
+sudo apt install -y ./waypenguin_<version>_amd64.deb
+sudo apt remove -y waypenguin
+
+# Fedora / RHEL
+sudo dnf upgrade -y ./waypenguin-<version>-1.x86_64.rpm
+sudo dnf remove -y waypenguin
+```
+
 ### Requirements
 
 - Linux with a **KDE Plasma 6** Wayland session (KWin)
@@ -69,14 +128,13 @@ Adding a new compositor = impl the trait. No core changes needed.
 
 | Version | Milestone |
 |---------|-----------|
-| V0.1 | Transparent overlay, Tux display, idle animation |
-| V0.2 | Movement & cursor tracking |
-| V0.3 | AI behavior (sleep/wake/walk/run) |
-| V0.4 | Settings application |
-| V0.5 | Multi-screen & HiDPI polish |
-| V0.6 | GNOME backend |
-| V0.7 | Hyprland + Sway backends |
-| V1.0 | Flatpak, RPM, DEB, AppImage release |
+| V0.1 | First public release (KDE Plasma Wayland support, AI states, multi-pet, procedural pose assets) |
+| V0.2 | Packaging polish (binary + DEB/RPM flow), config file, CLI basics |
+| V0.3 | Multi-screen and HiDPI improvements |
+| V0.4 | GNOME backend implementation |
+| V0.5 | Hyprland backend implementation |
+| V0.6 | Sway or generic wlr fallback backend |
+| V1.0 | Stable multi-backend Linux release and distribution channels (Flatpak/AppImage/DEB/RPM) |
 
 See [ROADMAP.md](./ROADMAP.md) for details.
 
