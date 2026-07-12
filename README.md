@@ -19,6 +19,10 @@ Tux the penguin walks, runs, sleeps, and follows your cursor on KDE Plasma 6, wi
 
 ---
 
+
+[Screencast_DEMO.webm](https://github.com/user-attachments/assets/554b307e-105b-46cd-a0b8-67eaba17d803)
+
+
 ## Quick start
 
 ```bash
