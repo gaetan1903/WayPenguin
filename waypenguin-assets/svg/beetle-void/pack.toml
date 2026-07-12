@@ -1,0 +1,21 @@
+# WayPenguin pet pack manifest.
+# Drop a copy of this directory into your pets folder to add a custom pet.
+# See ../README.md for the full template documentation.
+
+[pack]
+id          = "beetle-void"
+name        = "Beetle (Void)"
+author      = "WayPenguin"
+license     = "CC-BY-SA-4.0"
+version     = "1.0.0"
+description = "Matte obsidian beetle with dark metallic finish."
+
+[activities]
+walker   = "walker.svg"
+faller   = "faller.svg"
+climber  = "climber.svg"
+tumbler  = "tumbler.svg"
+floater  = "floater.svg"
+action0  = "action0.svg"
+angel    = "angel.svg"
+splatted = "splatted.svg"

@@ -1,10 +1,9 @@
 //! Pet-pack loading and rendering.
 //!
 //! A **pet pack** is a directory containing a `pack.toml` manifest plus one
-//! vector SVG per activity (see `svg/README.md`). The built-in `tux-alpha`
-//! pack is embedded at compile time; additional packs are discovered from the
-//! user pets directory at runtime, so contributors can add pets by dropping a
-//! directory in place — no rebuild required.
+//! vector SVG per activity (see `svg/README.md`). All packs found under
+//! `waypenguin-assets/svg/` are embedded at compile time; additional packs
+//! are discovered from the user pets directory at runtime.
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -24,8 +23,9 @@ pub const REQUIRED_ACTIVITY: &str = "walker";
 /// The id of the built-in default pack.
 pub const DEFAULT_PACK: &str = "tux-alpha";
 
-/// The built-in pack, embedded so the app works with no assets on disk.
-static BUILTIN_TUX_ALPHA: Dir<'static> = include_dir!("$CARGO_MANIFEST_DIR/svg/tux-alpha");
+/// All packs under `svg/` embedded at compile time — the whole directory tree
+/// is compiled in so the binary works with no assets on disk.
+static BUILTIN_SVG: Dir<'static> = include_dir!("$CARGO_MANIFEST_DIR/svg");
 
 // ---------------------------------------------------------------------------
 // Manifest
@@ -59,8 +59,10 @@ struct PackMeta {
 /// Where a pack's files are read from.
 #[derive(Debug, Clone)]
 enum Source {
-    /// Embedded in the binary (the built-in pack).
-    Builtin(&'static Dir<'static>),
+    /// Embedded in the binary. `root` is the parent `svg/` dir; `pack_path` is
+    /// the subdirectory name (e.g. `"tux-alpha"`) used to build root-relative
+    /// lookup paths (`"tux-alpha/pack.toml"`) that `include_dir` stores.
+    Builtin(&'static Dir<'static>, String),
     /// A directory on disk.
     Directory(PathBuf),
 }
@@ -68,8 +70,8 @@ enum Source {
 impl Source {
     fn read(&self, file: &str) -> Option<String> {
         match self {
-            Source::Builtin(dir) => dir
-                .get_file(file)
+            Source::Builtin(root, pack_path) => root
+                .get_file(format!("{pack_path}/{file}"))
                 .and_then(|f| f.contents_utf8())
                 .map(str::to_owned),
             Source::Directory(path) => std::fs::read_to_string(path.join(file)).ok(),
@@ -175,9 +177,19 @@ impl PetPack {
 // Discovery / registry
 // ---------------------------------------------------------------------------
 
-/// User pets directory: `$XDG_DATA_HOME/waypenguin/pets` (or
-/// `~/.local/share/waypenguin/pets`). Returns `None` if no home can be found.
+/// User pets directory.
+///
+/// Resolution order:
+/// 1. `WAYPENGUIN_PETS_DIR` — explicit override (useful during development to
+///    point directly at `waypenguin-assets/svg/`).
+/// 2. `$XDG_DATA_HOME/waypenguin/pets`
+/// 3. `~/.local/share/waypenguin/pets`
+///
+/// Returns `None` if no usable path can be determined.
 pub fn pets_dir() -> Option<PathBuf> {
+    if let Some(dir) = std::env::var_os("WAYPENGUIN_PETS_DIR") {
+        return Some(PathBuf::from(dir));
+    }
     let base = std::env::var_os("XDG_DATA_HOME")
         .map(PathBuf::from)
         .filter(|p| p.is_absolute())
@@ -185,9 +197,27 @@ pub fn pets_dir() -> Option<PathBuf> {
     Some(base.join("waypenguin").join("pets"))
 }
 
-/// The built-in default pack (always available).
+/// The built-in default pack (`tux-alpha`), always available.
 pub fn builtin_pack() -> Option<PetPack> {
-    PetPack::load(Source::Builtin(&BUILTIN_TUX_ALPHA), true)
+    BUILTIN_SVG
+        .dirs()
+        .find(|d| d.path().to_str() == Some(DEFAULT_PACK))
+        .and_then(|dir| {
+            let pack_path = dir.path().to_str()?.to_owned();
+            PetPack::load(Source::Builtin(&BUILTIN_SVG, pack_path), true)
+        })
+        .or_else(|| all_builtin_packs().into_iter().next())
+}
+
+/// All packs embedded at compile time (one per `svg/<id>/` subdirectory).
+fn all_builtin_packs() -> Vec<PetPack> {
+    BUILTIN_SVG
+        .dirs()
+        .filter_map(|dir| {
+            let pack_path = dir.path().to_str()?.to_owned();
+            PetPack::load(Source::Builtin(&BUILTIN_SVG, pack_path), true)
+        })
+        .collect()
 }
 
 /// Load a pack from a specific directory on disk.
@@ -195,13 +225,14 @@ pub fn load_pack_from_dir(dir: impl AsRef<Path>) -> Option<PetPack> {
     PetPack::load(Source::Directory(dir.as_ref().to_path_buf()), false)
 }
 
-/// All available packs: the built-in default plus any valid packs found under
-/// [`pets_dir`]. Later duplicates of an id are ignored (built-in wins).
+/// All available packs: every pack embedded at compile time, plus any valid
+/// packs found under [`pets_dir`]. Later duplicates of an id are ignored
+/// (built-in wins).
 pub fn discover_packs() -> Vec<PetPack> {
     let mut packs = Vec::new();
     let mut seen = std::collections::HashSet::new();
 
-    if let Some(pack) = builtin_pack() {
+    for pack in all_builtin_packs() {
         seen.insert(pack.info.id.clone());
         packs.push(pack);
     }
@@ -230,11 +261,19 @@ pub fn load_pack(id: &str) -> Option<PetPack> {
     discover_packs().into_iter().find(|p| p.info.id == id)
 }
 
-/// The active pack, cached. Currently always the built-in default; pack
-/// selection (via the settings app) will replace this later.
+/// The active pack, cached. Reads `WAYPENGUIN_PACK` at first use to select a
+/// pack by id; falls back to the built-in default when the variable is unset
+/// or the requested id is not found.
 fn active_pack() -> &'static PetPack {
-    static ACTIVE: LazyLock<PetPack> =
-        LazyLock::new(|| builtin_pack().expect("built-in pack must load"));
+    static ACTIVE: LazyLock<PetPack> = LazyLock::new(|| {
+        if let Ok(id) = std::env::var("WAYPENGUIN_PACK") {
+            if let Some(pack) = load_pack(&id) {
+                return pack;
+            }
+            eprintln!("waypenguin: WAYPENGUIN_PACK={id:?} not found, falling back to built-in");
+        }
+        builtin_pack().expect("built-in pack must load")
+    });
     &ACTIVE
 }
 

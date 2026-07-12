@@ -1,0 +1,21 @@
+# WayPenguin pet pack manifest.
+# Drop a copy of this directory into your pets folder to add a custom pet.
+# See ../README.md for the full template documentation.
+
+[pack]
+id          = "beetle-jade"
+name        = "Beetle (Jade)"
+author      = "WayPenguin"
+license     = "CC-BY-SA-4.0"
+version     = "1.0.0"
+description = "Iridescent emerald beetle with gold-tinted specular."
+
+[activities]
+walker   = "walker.svg"
+faller   = "faller.svg"
+climber  = "climber.svg"
+tumbler  = "tumbler.svg"
+floater  = "floater.svg"
+action0  = "action0.svg"
+angel    = "angel.svg"
+splatted = "splatted.svg"

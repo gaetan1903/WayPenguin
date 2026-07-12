@@ -4,6 +4,22 @@
 
 Tux the penguin walks, runs, sleeps, and follows your cursor on KDE Plasma 6, with zero desktop interference.
 
+**Status Badges:**
+
+| Desktop Support | Status |
+|---|---|
+| **KDE Plasma 6** | ✓ Working |
+| **GNOME** | Planned (help wanted) |
+| **Hyprland** | Planned |
+| **Sway** | Planned |
+
+| Project Status | Value |
+|---|---|
+| **Version** | v0.1.0 |
+| **Maturity** | Alpha |
+| **Language** | Rust (edition 2021) |
+| **License** | MIT |
+
 ---
 
 ## Features
@@ -13,7 +29,7 @@ Tux the penguin walks, runs, sleeps, and follows your cursor on KDE Plasma 6, wi
 - **AI-driven** — Tux sleeps when idle, wakes on cursor movement, runs when you move fast
 - **Multi-screen** — detects all outputs and moves across them
 - **HiDPI** — respects output scale factors
-- **Lightweight** — `< 30 MB RAM`, `< 1% CPU`, no Electron, no Qt, no GTK
+- **Lightweight** — `< 20 MB RAM`, `< 1% CPU`, no Electron, no Qt, no GTK
 - **Procedural asset** — Tux is generated in code; no external files needed
 - **Backend abstraction** — KDE Plasma works now; GNOME, Hyprland, Sway are prepared
 
@@ -133,6 +149,20 @@ Adding a new compositor = impl the trait. No core changes needed.
 | V1.0 | Stable multi-backend Linux release and distribution channels (Flatpak/AppImage/DEB/RPM) |
 
 See [ROADMAP.md](./ROADMAP.md) for details.
+
+---
+
+## GNOME Support — Help Wanted
+
+The GNOME backend crate exists ([`waypenguin-backends/gnome/`](./waypenguin-backends/gnome/)) but requires **runtime validation and fixes**. If you use GNOME Wayland, we need help with:
+
+- **Skeleton in place** — basic layer-shell, pointer, and output handling
+- **Testing on real GNOME sessions** — verify cursor tracking, window positioning, layer-shell anchoring
+- **Debugging** — layer-shell protocol differences between GNOME/Mutter and KWin
+- **Compositor flags** — document any special Mutter properties or environment variables needed
+- **Edge cases** — multi-monitor setups, HiDPI scaling, Wayland protocol version differences
+
+**To help:** Open an issue describing your GNOME version, Wayland session details, and any errors you encounter. Patches welcome.
 
 ---
 

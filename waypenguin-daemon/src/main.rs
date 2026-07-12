@@ -148,16 +148,43 @@ fn state_to_activity(state: PetState) -> &'static str {
     }
 }
 
-fn parse_args() -> u32 {
-    let args: Vec<String> = std::env::args().collect();
-    for i in 1..args.len() {
-        if args[i] == "-n" || args[i] == "--n" {
-            if let Some(n) = args.get(i + 1).and_then(|s| s.parse::<u32>().ok()) {
-                return n.clamp(1, 50);
+struct Args {
+    pet_count: u32,
+    pack: Option<String>,
+    data_dir: Option<String>,
+    list_packs: bool,
+}
+
+fn parse_args() -> Args {
+    let raw: Vec<String> = std::env::args().collect();
+    let mut args = Args { pet_count: 5, pack: None, data_dir: None, list_packs: false };
+    let mut i = 1;
+    while i < raw.len() {
+        match raw[i].as_str() {
+            "-n" | "--count" => {
+                if let Some(n) = raw.get(i + 1).and_then(|s| s.parse::<u32>().ok()) {
+                    args.pet_count = n.clamp(1, 50);
+                    i += 1;
+                }
             }
+            "-l" | "--list" => args.list_packs = true,
+            "-p" | "--pack" => {
+                if let Some(id) = raw.get(i + 1) {
+                    args.pack = Some(id.clone());
+                    i += 1;
+                }
+            }
+            "-d" | "--data" => {
+                if let Some(path) = raw.get(i + 1) {
+                    args.data_dir = Some(path.clone());
+                    i += 1;
+                }
+            }
+            _ => {}
         }
+        i += 1;
     }
-    5
+    args
 }
 
 struct PetInstance {
@@ -199,7 +226,34 @@ fn spawn_pets(
 }
 
 fn main() {
-    let pet_count = parse_args();
+    let args = parse_args();
+
+    // Apply overrides before the first pack discovery (LazyLock is init on first access).
+    // SAFETY: called before any threads are spawned.
+    if let Some(ref dir) = args.data_dir {
+        unsafe { std::env::set_var("WAYPENGUIN_PETS_DIR", dir) };
+    }
+    if let Some(ref id) = args.pack {
+        unsafe { std::env::set_var("WAYPENGUIN_PACK", id) };
+    }
+
+    if args.list_packs {
+        let packs = waypenguin_assets::discover_packs();
+        if packs.is_empty() {
+            println!("No packs found.");
+        } else {
+            for pack in &packs {
+                let tag = if pack.info.builtin { " [built-in]" } else { "" };
+                println!("{}{}", pack.info.id, tag);
+                if !pack.info.name.is_empty() { println!("  name:    {}", pack.info.name); }
+                if !pack.info.description.is_empty() { println!("  about:   {}", pack.info.description); }
+                println!("  poses:   {}", pack.activities().join(", "));
+            }
+        }
+        return;
+    }
+
+    let pet_count = args.pet_count;
     println!("Starting WayPenguin Daemon V0.1 ({} pets)", pet_count);
 
     // Try to initialize a backend: attempt GNOME first, fall back to KDE

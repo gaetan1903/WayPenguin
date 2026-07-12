@@ -1037,6 +1037,7 @@ dependencies = [
  "waypenguin-assets",
  "waypenguin-backends",
  "waypenguin-core",
+ "waypenguin-gnome",
  "waypenguin-kde",
  "waypenguin-renderer",
 ]
@@ -1045,6 +1046,10 @@ dependencies = [
 name = "waypenguin-gnome"
 version = "0.1.0"
 dependencies = [
+ "libc",
+ "smithay-client-toolkit",
+ "wayland-client",
+ "wayland-protocols",
  "waypenguin-backends",
 ]
 

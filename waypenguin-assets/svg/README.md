@@ -82,3 +82,91 @@ The Tux poses are generated from a small part-kit:
 ```
 python3 tux-alpha/generate_poses.py    # rewrites tux-alpha/*.svg
 ```
+
+---
+
+## Built-in packs
+
+All packs below are compiled into the binary.  
+Each thumbnail shows the `walker` pose (the default / fallback activity).
+
+<table>
+<tr>
+  <td align="center">
+    <img src="tux-alpha/walker.svg" width="96"/><br>
+    <b>tux-alpha</b><br>
+    <sub>Linux Tux — the default</sub>
+  </td>
+  <td align="center">
+    <img src="ladybug-classic/walker.svg" width="96"/><br>
+    <b>ladybug-classic</b><br>
+    <sub>Cinematic red ladybug</sub>
+  </td>
+  <td align="center">
+    <img src="beetle-void/walker.svg" width="96"/><br>
+    <b>beetle-void</b><br>
+    <sub>Matte obsidian beetle</sub>
+  </td>
+</tr>
+<tr>
+  <td align="center">
+    <img src="beetle-azure/walker.svg" width="96"/><br>
+    <b>beetle-azure</b><br>
+    <sub>Dark navy, glowing cyan eyes</sub>
+  </td>
+  <td align="center">
+    <img src="beetle-jade/walker.svg" width="96"/><br>
+    <b>beetle-jade</b><br>
+    <sub>Iridescent emerald beetle</sub>
+  </td>
+  <td align="center">
+    <img src="beetle-gold/walker.svg" width="96"/><br>
+    <b>beetle-gold</b><br>
+    <sub>Cinematic amber-gold beetle</sub>
+  </td>
+</tr>
+</table>
+
+---
+
+## Selecting a pack
+
+### Command-line flags
+
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--list` | `-l` | Print all available packs and exit |
+| `--pack <id>` | `-p` | Run with a specific pack |
+| `--data <path>` | `-d` | Set the packs directory to scan |
+| `--count <n>` | `-n` | Number of pet instances (default: 5) |
+
+```sh
+# list all packs compiled in (or found in the user packs dir)
+waypenguin-daemon --list
+
+# run with the jade beetle
+waypenguin-daemon --pack beetle-jade
+
+# list packs from a custom directory
+waypenguin-daemon --data /path/to/my/packs --list
+
+# combine: custom packs dir + specific pack + 3 pets
+waypenguin-daemon -d /path/to/my/packs -p my-custom-pet -n 3
+```
+
+### Environment variables
+
+Environment variables are applied before the first pack load and can be used
+in place of (or together with) the flags above.
+
+| Variable | Description |
+|----------|-------------|
+| `WAYPENGUIN_PACK` | Select a pack by id |
+| `WAYPENGUIN_PETS_DIR` | Override the user packs directory |
+
+```sh
+WAYPENGUIN_PACK=beetle-azure waypenguin-daemon
+WAYPENGUIN_PETS_DIR=~/my-packs WAYPENGUIN_PACK=my-pet waypenguin-daemon
+```
+
+CLI flags take precedence over the corresponding environment variables.
