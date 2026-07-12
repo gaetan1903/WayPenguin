@@ -1003,7 +1003,7 @@ dependencies = [
 
 [[package]]
 name = "waypenguin-assets"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "include_dir",
  "resvg",
@@ -1015,15 +1015,15 @@ dependencies = [
 
 [[package]]
 name = "waypenguin-backends"
-version = "0.1.0"
+version = "0.2.0"
 
 [[package]]
 name = "waypenguin-cli"
-version = "0.1.0"
+version = "0.2.0"
 
 [[package]]
 name = "waypenguin-core"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "fastrand",
  "serde",
@@ -1032,7 +1032,7 @@ dependencies = [
 
 [[package]]
 name = "waypenguin-daemon"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "waypenguin-assets",
  "waypenguin-backends",
@@ -1044,7 +1044,7 @@ dependencies = [
 
 [[package]]
 name = "waypenguin-gnome"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "libc",
  "smithay-client-toolkit",
@@ -1055,14 +1055,14 @@ dependencies = [
 
 [[package]]
 name = "waypenguin-hyprland"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "waypenguin-backends",
 ]
 
 [[package]]
 name = "waypenguin-kde"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "libc",
  "smithay-client-toolkit",
@@ -1073,14 +1073,14 @@ dependencies = [
 
 [[package]]
 name = "waypenguin-renderer"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "waypenguin-core",
 ]
 
 [[package]]
 name = "waypenguin-settings"
-version = "0.1.0"
+version = "0.2.0"
 
 [[package]]
 name = "weezl"

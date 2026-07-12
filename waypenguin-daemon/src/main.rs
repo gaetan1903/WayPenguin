@@ -3,8 +3,8 @@ use std::thread;
 use std::time::{Duration, Instant};
 use waypenguin_backends::DesktopBackend;
 use waypenguin_core::{AnimationFrame, Pet, PetState};
-use waypenguin_kde::KdeBackend;
 use waypenguin_gnome::GnomeBackend;
+use waypenguin_kde::KdeBackend;
 
 const PET_SIZE: u32 = 90;
 const AVOID_DIST: f32 = 120.0;
@@ -157,7 +157,12 @@ struct Args {
 
 fn parse_args() -> Args {
     let raw: Vec<String> = std::env::args().collect();
-    let mut args = Args { pet_count: 5, pack: None, data_dir: None, list_packs: false };
+    let mut args = Args {
+        pet_count: 5,
+        pack: None,
+        data_dir: None,
+        list_packs: false,
+    };
     let mut i = 1;
     while i < raw.len() {
         match raw[i].as_str() {
@@ -245,8 +250,12 @@ fn main() {
             for pack in &packs {
                 let tag = if pack.info.builtin { " [built-in]" } else { "" };
                 println!("{}{}", pack.info.id, tag);
-                if !pack.info.name.is_empty() { println!("  name:    {}", pack.info.name); }
-                if !pack.info.description.is_empty() { println!("  about:   {}", pack.info.description); }
+                if !pack.info.name.is_empty() {
+                    println!("  name:    {}", pack.info.name);
+                }
+                if !pack.info.description.is_empty() {
+                    println!("  about:   {}", pack.info.description);
+                }
                 println!("  poses:   {}", pack.activities().join(", "));
             }
         }

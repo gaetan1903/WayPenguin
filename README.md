@@ -15,7 +15,7 @@ Tux the penguin walks, runs, sleeps, and follows your cursor on KDE Plasma 6, wi
 
 | Project Status | Value |
 |---|---|
-| **Version** | v0.1.0 |
+| **Version** | v0.2.0 |
 | **Maturity** | Alpha |
 | **Language** | Rust (edition 2021) |
 | **License** | MIT |
@@ -44,6 +44,67 @@ Tux the penguin walks, runs, sleeps, and follows your cursor on KDE Plasma 6, wi
 ```bash
 # Build and run the daemon on KDE Plasma 6 (Wayland session)
 cargo run --bin waypenguin-daemon
+```
+
+---
+
+## Command-line options
+
+```
+waypenguin-daemon [OPTIONS]
+```
+
+| Flag | Short | Default | Description |
+|------|-------|---------|-------------|
+| `--count <N>` | `-n` | `5` | Number of pets to spawn (1–50) |
+| `--pack <id>` | `-p` | *(built-in default)* | Pet pack to use, by pack ID |
+| `--data <path>` | `-d` | *(XDG data dir)* | Custom path to the pets directory |
+| `--list` | `-l` | — | List all discovered packs and exit |
+
+### Examples
+
+```bash
+# Spawn 1 pet using the ladybug pack
+waypenguin-daemon --count 1 --pack ladybug-classic
+
+# List all available packs (built-in and user-installed)
+waypenguin-daemon --list
+
+# Use a custom pets folder
+waypenguin-daemon --data ~/.local/share/my-pets --pack my-custom-pack
+```
+
+---
+
+## Themes (pet packs)
+
+Use `--pack <id>` to select a theme. Run `--list` to see all packs installed on your system.
+
+| ID | Name | Preview | Description |
+|----|------|---------|-------------|
+| `tux-alpha` | Tux (Alpha) | ![tux-alpha walker](waypenguin-assets/svg/tux-alpha/walker.svg) | The classic Linux mascot, hand-drawn as clean vector poses. |
+| `beetle-azure` | Beetle (Azure) | ![beetle-azure walker](waypenguin-assets/svg/beetle-azure/walker.svg) | Cyberpunk black beetle with glowing cyan eyes. |
+| `beetle-gold` | Beetle (Gold) | ![beetle-gold walker](waypenguin-assets/svg/beetle-gold/walker.svg) | Cinematic amber-gold beetle with dark spot markings. |
+| `beetle-jade` | Beetle (Jade) | ![beetle-jade walker](waypenguin-assets/svg/beetle-jade/walker.svg) | Iridescent emerald beetle with gold-tinted specular. |
+| `beetle-void` | Beetle (Void) | ![beetle-void walker](waypenguin-assets/svg/beetle-void/walker.svg) | Matte obsidian beetle with dark metallic finish. |
+| `ladybug-classic` | Ladybug (Classic) | ![ladybug-classic walker](waypenguin-assets/svg/ladybug-classic/walker.svg) | Cinematic red ladybug with gloss dome shell and black spots. |
+
+### Custom packs
+
+Drop a directory containing a `pack.toml` and SVG pose files into your pets folder (`~/.local/share/waypenguin/pets/` by default, or the path set with `--data`). The `walker` activity is required; all others are optional. Run `--list` to confirm the pack is discovered.
+
+```toml
+# pack.toml — minimal example
+[pack]
+id          = "my-pet"
+name        = "My Custom Pet"
+author      = "You"
+license     = "CC-BY-4.0"
+version     = "1.0.0"
+description = "A custom desktop pet."
+
+[activities]
+walker = "walker.svg"
 ```
 
 ## Install from GitHub Releases
@@ -137,16 +198,6 @@ Adding a new compositor = impl the trait. No core changes needed.
 ---
 
 ## Roadmap
-
-| Version | Milestone |
-|---------|-----------|
-| V0.1 | First public release (KDE Plasma Wayland support, AI states, multi-pet, procedural pose assets) |
-| V0.2 | Packaging polish (binary + DEB/RPM flow), config file, CLI basics |
-| V0.3 | Multi-screen and HiDPI improvements |
-| V0.4 | GNOME backend implementation |
-| V0.5 | Hyprland backend implementation |
-| V0.6 | Sway or generic wlr fallback backend |
-| V1.0 | Stable multi-backend Linux release and distribution channels (Flatpak/AppImage/DEB/RPM) |
 
 See [ROADMAP.md](./ROADMAP.md) for details.
 

@@ -15,10 +15,13 @@ Status key: Done | In progress | Planned
 - [x] Multi-pet support with basic interactions
 - [x] Procedural/vector activity asset pipeline
 - [x] Release build script for executable
+- [x] Built-in multi-theme pet packs (tux-alpha, beetle-*, ladybug-classic)
+- [x] Custom user pack support via pack.toml manifest
+- [x] CLI flags: --count, --pack, --data, --list
 
 ### Stability & packaging
-- [ ] Improve release packaging reliability for x86_64 and arm64
-- [ ] Configuration surface (count, size, behavior tuning)
+- [x] Improve release packaging reliability for x86_64 and arm64
+- [x] Configuration surface (count, pet pack selection, custom data path via CLI flags)
 - [ ] Improve runtime resilience and error handling
 
 ### Display & movement quality
