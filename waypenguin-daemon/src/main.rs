@@ -228,8 +228,11 @@ fn main() {
     let mut last_tick = Instant::now();
 
     loop {
-        if let Err(e) = backend.event_queue.dispatch_pending(&mut backend.state) {
-            eprintln!("Wayland dispatch error: {:?}", e);
+        // Flush our requests and read+dispatch incoming events (non-blocking).
+        // Without reading the socket, buffer-release events are lost and the
+        // connection eventually breaks — see KdeBackend::pump_events.
+        if let Err(e) = backend.pump_events() {
+            eprintln!("Wayland event error: {:?}", e);
             break;
         }
 
@@ -388,7 +391,6 @@ fn main() {
             }
         }
 
-        let _ = backend.connection.flush();
         thread::sleep(Duration::from_millis(16));
     }
 }

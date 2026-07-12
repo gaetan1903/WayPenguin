@@ -556,10 +556,7 @@ impl Pet {
             if smooth_step >= dist {
                 self.x = self.target_x;
                 self.y = self.target_y;
-                if self.state == PetState::Wander {
-                    self.state = PetState::Idle;
-                    self.wander_timer_ms = fastrand::u32(500..2000);
-                }
+                self.arrive_at_target();
             } else {
                 self.x += (dx / dist) * smooth_step;
                 self.y += (dy / dist) * smooth_step;
@@ -574,6 +571,26 @@ impl Pet {
             if self.state == PetState::Sleep {
                 self.state = PetState::Walk;
             }
+        } else {
+            // Already at the target: don't linger in a locomotion pose, or the
+            // pet gets stuck standing in the walk sprite forever.
+            self.arrive_at_target();
+        }
+    }
+
+    /// Return a ground pet to `Idle` once it reaches its movement target, so no
+    /// locomotion state (Walk/Run/Wander/…) is left frozen in place.
+    fn arrive_at_target(&mut self) {
+        match self.state {
+            PetState::Wander => {
+                self.state = PetState::Idle;
+                self.wander_timer_ms = fastrand::u32(500..2000);
+            }
+            PetState::Walk | PetState::Run | PetState::Wake | PetState::FollowCursor => {
+                self.state = PetState::Idle;
+                self.speed = 0.0;
+            }
+            _ => {}
         }
     }
 
@@ -953,6 +970,42 @@ impl Pet {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn walk_returns_to_idle_after_reaching_target() {
+        // Regression: a pet that walked to its target and got no further cursor
+        // input used to stay frozen in the Walk pose forever.
+        let mut pet = Pet::new(500.0, 1050.0);
+        pet.state = PetState::Walk;
+        pet.speed = 2.0;
+        pet.target_x = 520.0;
+        pet.target_y = 1050.0;
+
+        // Advance until it should have covered the 20px gap.
+        for _ in 0..200 {
+            pet.update_movement(16);
+            if pet.state != PetState::Walk {
+                break;
+            }
+        }
+
+        assert_eq!(pet.state, PetState::Idle, "walk should end at Idle");
+        assert!((pet.x - 520.0).abs() < 1.0, "pet should have reached target");
+    }
+
+    #[test]
+    fn locomotion_at_target_does_not_get_stuck() {
+        // A locomotion state whose target already equals its position must not
+        // linger — it should flip to Idle on the next movement tick.
+        for state in [PetState::Walk, PetState::Run, PetState::Wander] {
+            let mut pet = Pet::new(300.0, 1050.0);
+            pet.state = state;
+            pet.target_x = pet.x;
+            pet.target_y = pet.y;
+            pet.update_movement(16);
+            assert_eq!(pet.state, PetState::Idle, "{state:?} should reset to Idle");
+        }
+    }
 
     #[test]
     fn test_animation_frame_advancement() {

@@ -123,25 +123,38 @@ def pose_angel():
 
 def pose_walker():
     # side profile facing left
-    body = (f'<ellipse cx="43" cy="94" rx="13" ry="5" fill="{ORANGE}" stroke="{ORANGE_D}" stroke-width="1"/>'
-            # back/head silhouette
-            f'<path d="M62 40 C62 20 52 10 42 10 C30 10 24 22 24 38 '
-            f'C24 44 22 50 22 64 C22 82 30 92 44 92 C58 92 64 80 64 62 '
-            f'C64 54 62 48 62 40 Z" fill="{BLACK}"/>'
-            # belly (front, left side)
-            f'<path d="M28 45 C21 53 21 72 26 82 C30 89 41 89 45 84 '
-            f'C46 70 46 56 44 47 C40 42 32 42 28 45 Z" fill="{BELLY}"/>'
-            # beak pointing left
-            f'<path d="M24 34 C16 34 12 37 12 40 C12 43 16 45 24 44 Z" '
-            f'fill="{ORANGE}" stroke="{ORANGE_D}" stroke-width="0.8"/>'
-            # eye
-            f'<ellipse cx="34" cy="30" rx="5.5" ry="7" fill="#fff"/>'
-            f'<ellipse cx="31.5" cy="32" rx="2.4" ry="3.2" fill="{BLACK}"/>'
-            # near flipper
-            f'<path d="M50 46 C56 52 56 68 52 76 C49 80 45 76 45 68 '
-            f'C45 60 46 52 47 47 Z" fill="{BLACK}"/>'
-            # back foot
-            f'<ellipse cx="56" cy="93" rx="11" ry="4.5" fill="{ORANGE_D}"/>')
+    body = (f'<g transform="rotate(-10 38 94)">'
+        f'<ellipse cx="38" cy="94" rx="13" ry="4.8" fill="{ORANGE}" stroke="{ORANGE_D}" stroke-width="1"/>'
+        f'</g>'
+        f'<g transform="rotate(9 61 93)">'
+        f'<ellipse cx="61" cy="93" rx="10.5" ry="4" fill="{ORANGE}" stroke="{ORANGE_D}" stroke-width="1"/>'
+        f'</g>'
+        # back/head silhouette
+        f'<path d="M61 42 C63 21 55 7 41 8 C27 10 19 23 21 39 '
+        f'C22 48 20 57 21 68 C23 86 35 95 50 92 C64 89 68 77 66 60 '
+        f'C65 52 62 46 61 42 Z" fill="{BLACK}"/>'
+        # odd head lobe and tiny crest to make the profile intentionally weird
+        f'<path d="M44 13 C49 7 59 7 63 14 C66 20 62 28 55 30 '
+        f'C48 32 43 29 41 22 C40 18 41 15 44 13 Z" fill="{BLACK}"/>'
+        f'<path d="M47 8 L50 3 L53 8" fill="none" stroke="{ORANGE}" '
+        f'stroke-width="1.8" stroke-linecap="round"/>'
+        # belly (front, left side)
+        f'<path d="M30 45 C22 53 22 74 28 84 C33 91 45 90 50 84 '
+        f'C51 70 50 56 47 47 C42 42 34 41 30 45 Z" fill="{BELLY}"/>'
+        # beak pointing left
+        f'<path d="M25 35 C16 34 11 38 11 41 C11 45 16 47 25 45 Z" '
+        f'fill="{ORANGE}" stroke="{ORANGE_D}" stroke-width="0.9"/>'
+        # eye (quirky side-glance)
+        f'<ellipse cx="33.2" cy="27.9" rx="6.7" ry="8.6" fill="#fff"/>'
+        f'<ellipse cx="30.3" cy="29.4" rx="2.8" ry="3.7" fill="{BLACK}"/>'
+        f'<ellipse cx="38.6" cy="30.8" rx="1.5" ry="2.1" fill="{BLACK}" '
+        f'transform="rotate(15 38.6 30.8)"/>'
+        # near flipper/hand kept dark, pushed outward for readability
+        f'<path d="M55 41 C66 45 73 58 72 72 C71 82 65 87 59 85 '
+        f'C54 83 50 74 49 64 C48 55 50 46 55 41 Z" fill="{BLACK}"/>'
+        f'<path d="M63 58 C67 63 69 70 68 78" fill="none" stroke="#3a3a3a" '
+        f'stroke-width="1" stroke-linecap="round"/>'
+        f'<ellipse cx="66.6" cy="84" rx="4.2" ry="2.8" fill="{BLACK}"/>')
     return svg(body)
 
 def pose_climber():
@@ -193,9 +206,9 @@ POSES = {
 }
 
 if __name__ == "__main__":
-    out = os.path.join(os.path.dirname(__file__), "out")
-    os.makedirs(out, exist_ok=True)
+    # Write the poses next to this script, i.e. into the pack directory.
+    out = os.path.dirname(os.path.abspath(__file__))
     for name, data in POSES.items():
         with open(os.path.join(out, name + ".svg"), "w") as f:
             f.write(data)
-        print("wrote", name)
+        print("wrote", name + ".svg")

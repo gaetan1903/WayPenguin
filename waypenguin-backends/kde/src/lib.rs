@@ -19,6 +19,7 @@ use smithay_client_toolkit::{
 };
 use std::mem::ManuallyDrop;
 use wayland_client::{
+    backend::WaylandError,
     protocol::{wl_buffer, wl_output, wl_pointer, wl_region, wl_seat, wl_shm, wl_surface},
     Connection, Dispatch, QueueHandle,
 };
@@ -318,6 +319,38 @@ impl KdeBackend {
             qh,
             state,
         })
+    }
+
+    /// Flush queued requests and read+dispatch pending Wayland events without
+    /// blocking. This MUST run every frame: `dispatch_pending` alone never
+    /// reads the socket, so `wl_buffer.release` events would be missed (making
+    /// surfaces freeze) and the receive buffer would eventually fill until the
+    /// compositor drops us with a broken pipe.
+    pub fn pump_events(&mut self) -> Result<(), BackendError> {
+        // Dispatch anything already decoded into the queue.
+        self.event_queue
+            .dispatch_pending(&mut self.state)
+            .map_err(|e| BackendError::WindowError(format!("dispatch: {e:?}")))?;
+
+        // Push our own requests (attach/commit/set_margin) to the compositor.
+        self.event_queue
+            .flush()
+            .map_err(|e| BackendError::WindowError(format!("flush: {e:?}")))?;
+
+        // Read whatever the compositor has sent us, non-blocking. The Wayland
+        // socket is non-blocking, so an empty socket returns `WouldBlock`.
+        if let Some(guard) = self.connection.prepare_read() {
+            match guard.read() {
+                Ok(_) => {
+                    self.event_queue
+                        .dispatch_pending(&mut self.state)
+                        .map_err(|e| BackendError::WindowError(format!("dispatch: {e:?}")))?;
+                }
+                Err(WaylandError::Io(e)) if e.kind() == std::io::ErrorKind::WouldBlock => {}
+                Err(e) => return Err(BackendError::WindowError(format!("read: {e:?}"))),
+            }
+        }
+        Ok(())
     }
 }
 

@@ -1,0 +1,25 @@
+# WayPenguin pet pack manifest.
+# Drop a copy of this directory into your pets folder to add a custom pet.
+# See ../README.md for the full template documentation.
+
+[pack]
+id          = "tux-alpha"                 # unique slug — must match the directory name
+name        = "Tux (Alpha)"               # display name shown in the settings app
+author      = "WayPenguin"
+license     = "CC-BY-SA-4.0"
+version     = "1.0.0"
+description = "The classic Linux mascot, hand-drawn as clean vector poses."
+
+# Map each activity to an SVG file in this directory.
+# Every SVG should use a square `0 0 100 100` viewBox and transparent background.
+# "walker" is required (used as the fallback for any activity a pack omits);
+# all other activities are optional.
+[activities]
+walker   = "walker.svg"     # side profile, moving
+faller   = "faller.svg"     # falling, flippers spread
+climber  = "climber.svg"    # scaling a wall
+tumbler  = "tumbler.svg"    # tumbling / off-balance
+floater  = "floater.svg"    # drifting down (propeller/parachute)
+action0  = "action0.svg"    # idle / ambient action
+angel    = "angel.svg"      # expired → floating away
+splatted = "splatted.svg"   # expired → splat
