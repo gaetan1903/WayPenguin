@@ -990,7 +990,10 @@ mod tests {
         }
 
         assert_eq!(pet.state, PetState::Idle, "walk should end at Idle");
-        assert!((pet.x - 520.0).abs() < 1.0, "pet should have reached target");
+        assert!(
+            (pet.x - 520.0).abs() < 1.0,
+            "pet should have reached target"
+        );
     }
 
     #[test]
