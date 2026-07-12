@@ -30,29 +30,25 @@ impl ThemeRenderer {
         let mut frame_lists = HashMap::new();
 
         for &name in &activity_names {
-            let (frames, base_w, base_h) = waypenguin_assets::get_activity_frames(name)?;
+            // Rasterise the vector pose directly at display size — no
+            // nearest-neighbor upscale, so the art stays crisp.
+            let (frames, frame_w, frame_h) =
+                waypenguin_assets::get_activity_frames(name, PET_SIZE)?;
 
             let frame_count = frames.len();
 
-            // Scale to fit within PET_SIZE, preserving aspect ratio
-            let scale = (PET_SIZE as f32 / base_h as f32).min(PET_SIZE as f32 / base_w as f32);
-            let frame_w = (base_w as f32 * scale).ceil() as u32;
-            let frame_h = (base_h as f32 * scale).ceil() as u32;
-
-            // Upscale each frame and concatenate into one spritesheet
+            // Concatenate frames into one spritesheet (poses are single-frame).
             let sheet_w = frame_w * frame_count as u32;
             let sheet_h = frame_h;
             let mut pixels = vec![0u32; (sheet_w * sheet_h) as usize];
 
             for (i, frame) in frames.iter().enumerate() {
-                let upscaled =
-                    waypenguin_assets::upscale_frame(frame, base_w, base_h, frame_w, frame_h);
                 let x_off = i as u32 * frame_w;
                 for y in 0..frame_h {
                     let src_begin = (y * frame_w) as usize;
                     let dst_begin = (y * sheet_w + x_off) as usize;
                     pixels[dst_begin..dst_begin + frame_w as usize]
-                        .copy_from_slice(&upscaled[src_begin..src_begin + frame_w as usize]);
+                        .copy_from_slice(&frame[src_begin..src_begin + frame_w as usize]);
                 }
             }
 
@@ -66,8 +62,8 @@ impl ThemeRenderer {
                 .collect();
 
             println!(
-                "  {}: {} frames, {}×{} → {}×{} (scale {:.2})",
-                name, frame_count, base_w, base_h, frame_w, frame_h, scale
+                "  {}: {} frames, rendered at {}×{}",
+                name, frame_count, frame_w, frame_h
             );
 
             activities.insert(
