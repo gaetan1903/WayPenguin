@@ -9,4 +9,5 @@ waypenguin-core = { path = "../waypenguin-core" }
 waypenguin-renderer = { path = "../waypenguin-renderer" }
 waypenguin-backends = { path = "../waypenguin-backends" }
 waypenguin-kde = { path = "../waypenguin-backends/kde" }
+waypenguin-gnome = { path = "../waypenguin-backends/gnome" }
 waypenguin-assets = { path = "../waypenguin-assets" }

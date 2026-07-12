@@ -30,64 +30,56 @@ Tux the penguin walks, runs, sleeps, and follows your cursor on KDE Plasma 6, wi
 cargo run --bin waypenguin-daemon
 ```
 
-## Install from GitHub Releases (DEB/RPM)
+## Install from GitHub Releases
 
-Use these steps when you publish release packages on GitHub.
+Download a pre-built executable for your architecture and add it to your PATH.
 
-1. Open the Releases page and choose a tag (example: v0.1.0).
-2. Download the package matching your distro and CPU architecture.
-3. Install with your package manager.
-
-### Debian / Ubuntu (.deb)
-
-Install runtime dependencies (first time only):
-
-```bash
-sudo apt update
-sudo apt install -y libwayland-client0 libwayland-cursor0 libxkbcommon0
-```
-
-Download and install the release package:
+### 1. Download
 
 ```bash
 TAG="v0.1.0"
-curl -fLO "https://github.com/<owner>/<repo>/releases/download/${TAG}/waypenguin_${TAG#v}_amd64.deb"
-sudo apt install -y "./waypenguin_${TAG#v}_amd64.deb"
+ARCH="x86_64"  # or aarch64 for arm64
+curl -fLO "https://github.com/<owner>/<repo>/releases/download/${TAG}/waypenguin-daemon-linux-${ARCH}"
 ```
 
-### Fedora / RHEL / Rocky / AlmaLinux (.rpm)
+### 2. Install to PATH
 
-Install runtime dependencies (first time only):
+Make executable and move to a directory in your `PATH`:
 
 ```bash
-sudo dnf install -y wayland libxkbcommon
+chmod +x waypenguin-daemon-linux-${ARCH}
+sudo mv waypenguin-daemon-linux-${ARCH} /usr/local/bin/waypenguin-daemon
 ```
 
-Download and install the release package:
+Or use your home directory PATH:
 
 ```bash
-TAG="v0.1.0"
-curl -fLO "https://github.com/<owner>/<repo>/releases/download/${TAG}/waypenguin-${TAG#v}-1.x86_64.rpm"
-sudo dnf install -y "./waypenguin-${TAG#v}-1.x86_64.rpm"
+mkdir -p ~/.local/bin
+mv waypenguin-daemon-linux-${ARCH} ~/.local/bin/waypenguin-daemon
+export PATH="$HOME/.local/bin:$PATH"
 ```
 
-### Run after installation
+### 3. Run
 
 ```bash
 waypenguin-daemon
 ```
 
-### Update and uninstall
+### Runtime dependencies
+
+Most modern Linux distributions include these. If you encounter missing libraries:
 
 ```bash
 # Debian / Ubuntu
-sudo apt install -y ./waypenguin_<version>_amd64.deb
-sudo apt remove -y waypenguin
+sudo apt install -y libwayland-client0 libwayland-cursor0 libxkbcommon0
 
-# Fedora / RHEL
-sudo dnf upgrade -y ./waypenguin-<version>-1.x86_64.rpm
-sudo dnf remove -y waypenguin
+# Fedora / RHEL / Rocky
+sudo dnf install -y wayland libxkbcommon
 ```
+
+### Update
+
+Download the new executable and repeat steps 2-3.
 
 ### Requirements
 

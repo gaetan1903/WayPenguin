@@ -3,6 +3,10 @@ use waypenguin_backends::{BackendError, DesktopBackend, DesktopWindow, ScreenInf
 pub struct HyprlandBackend;
 
 impl DesktopBackend for HyprlandBackend {
+    fn pump_events(&mut self) -> Result<(), BackendError> {
+        Ok(())
+    }
+
     fn get_screens(&self) -> Vec<ScreenInfo> {
         vec![]
     }

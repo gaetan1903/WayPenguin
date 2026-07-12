@@ -4,6 +4,7 @@ use std::time::{Duration, Instant};
 use waypenguin_backends::DesktopBackend;
 use waypenguin_core::{AnimationFrame, Pet, PetState};
 use waypenguin_kde::KdeBackend;
+use waypenguin_gnome::GnomeBackend;
 
 const PET_SIZE: u32 = 90;
 const AVOID_DIST: f32 = 120.0;
@@ -166,7 +167,7 @@ struct PetInstance {
 }
 
 fn spawn_pets(
-    backend: &mut KdeBackend,
+    backend: &mut dyn DesktopBackend,
     count: u32,
     screen_w: f32,
     screen_h: f32,
@@ -201,12 +202,22 @@ fn main() {
     let pet_count = parse_args();
     println!("Starting WayPenguin Daemon V0.1 ({} pets)", pet_count);
 
-    let mut backend = match KdeBackend::new() {
-        Ok(b) => b,
-        Err(e) => {
-            eprintln!("Failed to initialize KDE backend: {:?}", e);
-            std::process::exit(1);
+    // Try to initialize a backend: attempt GNOME first, fall back to KDE
+    let mut backend: Box<dyn DesktopBackend> = match GnomeBackend::new() {
+        Ok(b) => {
+            println!("Initialized GNOME Wayland backend");
+            Box::new(b)
         }
+        Err(_) => match KdeBackend::new() {
+            Ok(b) => {
+                println!("Initialized KDE Wayland backend");
+                Box::new(b)
+            }
+            Err(e) => {
+                eprintln!("Failed to initialize any Wayland backend: {:?}", e);
+                std::process::exit(1);
+            }
+        },
     };
 
     let screens = backend.get_screens();
@@ -222,7 +233,7 @@ fn main() {
     };
 
     let theme_renderer = ThemeRenderer::load();
-    let mut pets = spawn_pets(&mut backend, pet_count, screen_w, screen_h);
+    let mut pets = spawn_pets(backend.as_mut(), pet_count, screen_w, screen_h);
 
     println!("Starting main event loop...");
     let mut last_tick = Instant::now();
@@ -230,7 +241,7 @@ fn main() {
     loop {
         // Flush our requests and read+dispatch incoming events (non-blocking).
         // Without reading the socket, buffer-release events are lost and the
-        // connection eventually breaks — see KdeBackend::pump_events.
+        // connection eventually breaks — see DesktopBackend::pump_events.
         if let Err(e) = backend.pump_events() {
             eprintln!("Wayland event error: {:?}", e);
             break;

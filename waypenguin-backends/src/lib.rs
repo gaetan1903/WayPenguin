@@ -25,6 +25,9 @@ pub enum BackendError {
 }
 
 pub trait DesktopBackend {
+    /// Pump backend event queues once per frame.
+    fn pump_events(&mut self) -> Result<(), BackendError>;
+
     /// Return list of connected screens
     fn get_screens(&self) -> Vec<ScreenInfo>;
 

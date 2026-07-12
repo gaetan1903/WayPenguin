@@ -355,6 +355,10 @@ impl KdeBackend {
 }
 
 impl DesktopBackend for KdeBackend {
+    fn pump_events(&mut self) -> Result<(), BackendError> {
+        KdeBackend::pump_events(self)
+    }
+
     fn get_screens(&self) -> Vec<ScreenInfo> {
         self.state
             .output_state

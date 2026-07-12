@@ -5,3 +5,7 @@ edition = "2021"
 
 [dependencies]
 waypenguin-backends = { path = ".." }
+wayland-client = "0.31"
+wayland-protocols = "0.32"
+smithay-client-toolkit = { version = "0.19", features = ["calloop"] }
+libc = "0.2"
