@@ -1154,7 +1154,7 @@ mod tests {
         let mut pet = Pet::new(100.0, 100.0);
         pet.cursor_x = 0.0;
         pet.cursor_y = 0.0;
-        pet.update_ai(16, 500.0, 500.0, true, &[]);
+        pet.update_ai(16, 140.0, 140.0, true, &[]);
         assert_eq!(pet.state, PetState::Run);
     }
 
