@@ -10,4 +10,5 @@ waypenguin-renderer = { path = "../waypenguin-renderer" }
 waypenguin-backends = { path = "../waypenguin-backends" }
 waypenguin-kde = { path = "../waypenguin-backends/kde" }
 waypenguin-gnome = { path = "../waypenguin-backends/gnome" }
+waypenguin-cosmic = { path = "../waypenguin-backends/cosmic" }
 waypenguin-assets = { path = "../waypenguin-assets" }

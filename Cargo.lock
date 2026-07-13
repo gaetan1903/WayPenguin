@@ -1031,12 +1031,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "waypenguin-cosmic"
+version = "0.2.1"
+dependencies = [
+ "libc",
+ "smithay-client-toolkit",
+ "wayland-client",
+ "wayland-protocols",
+ "waypenguin-backends",
+]
+
+[[package]]
 name = "waypenguin-daemon"
 version = "0.2.1"
 dependencies = [
  "waypenguin-assets",
  "waypenguin-backends",
  "waypenguin-core",
+ "waypenguin-cosmic",
  "waypenguin-gnome",
  "waypenguin-kde",
  "waypenguin-renderer",

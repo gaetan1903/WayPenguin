@@ -3,6 +3,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 use waypenguin_backends::DesktopBackend;
 use waypenguin_core::{AnimationFrame, Pet, PetState};
+use waypenguin_cosmic::CosmicBackend;
 use waypenguin_gnome::GnomeBackend;
 use waypenguin_kde::KdeBackend;
 
@@ -276,10 +277,16 @@ fn main() {
                 println!("Initialized KDE Wayland backend");
                 Box::new(b)
             }
-            Err(e) => {
-                eprintln!("Failed to initialize any Wayland backend: {:?}", e);
-                std::process::exit(1);
-            }
+            Err(_) => match CosmicBackend::new() {
+                Ok(b) => {
+                    println!("Initialized COSMIC Wayland backend");
+                    Box::new(b)
+                }
+                Err(e) => {
+                    eprintln!("Failed to initialize any Wayland backend: {:?}", e);
+                    std::process::exit(1);
+                }
+            },
         },
     };
 
