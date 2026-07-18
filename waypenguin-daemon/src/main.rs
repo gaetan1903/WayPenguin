@@ -275,7 +275,7 @@ fn main() {
     }
 
     let pet_count = args.pet_count;
-    println!("Starting WayPenguin Daemon V0.1 ({} pets)", pet_count);
+    println!("Starting WayPenguin Daemon V0.3 ({} pets)", pet_count);
 
     // Try to initialize a backend: attempt GNOME first, fall back to KDE
     let mut backend: Box<dyn DesktopBackend> = match GnomeBackend::new() {
