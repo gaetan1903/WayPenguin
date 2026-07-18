@@ -493,6 +493,9 @@ struct FrameBuffer {
 
 impl FrameBuffer {
     fn write_pixels(&mut self, pixels: &[u32]) {
+        // SAFETY: `canvas_ptr` points into the SlotPool-backed SHM region for this buffer and
+        // `canvas_len` is the size of that region in bytes. The buffer format is ARGB8888, so
+        // interpreting it as a `u32` slice of length `canvas_len / 4` is valid for writes.
         let dst = unsafe {
             std::slice::from_raw_parts_mut(self.canvas_ptr as *mut u32, self.canvas_len / 4)
         };
