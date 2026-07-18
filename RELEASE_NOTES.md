@@ -1,33 +1,34 @@
 # Release Draft
 
-Tag: v0.2.1
-Version: 0.2.1
-Title: WayPenguin v0.2.1 - Movement Stability Patch
-Date: 2026-07-12
+Tag: v0.3.0
+Version: 0.3.0
+Title: WayPenguin v0.3.0 - COSMIC Support & Pet Scaling
+Date: 2026-07-18
 
 ## Summary
-v0.2.1 is a patch release focused on movement reliability: reduced bottom freeze behavior, stronger cursor avoidance, and better corner distribution.
+v0.3.0 adds runtime support for COSMIC desktop and introduces pet scaling configuration via both pack manifests and command-line override.
 
 ## Compatibility
-- Supported now: KDE Plasma 6 on Wayland (KWin backend).
+- Supported now: KDE Plasma 6 and COSMIC on Wayland.
 - Not supported yet: GNOME and Hyprland runtime backends (stubs remain, planned for v0.4/v0.5).
 
 ## Release Notes
-- Fixed: pets now flee when cursor overlaps their body area, not only when nearby at floor level.
-- Fixed: edge-clamped flee targets now choose an opposite-side fallback to prevent apparent frozen run states.
-- Fixed: idle/sleep watchdog reduces long immobile periods at bottom by auto-waking and forcing movement bursts.
-- Improved: wander target selection explicitly includes both corners, reducing right-corner clustering.
+- Added: COSMIC backend runtime support with daemon fallback sequence including COSMIC.
+- Added: `scale` field in `pack.toml` to define per-pack default pet size multiplier.
+- Added: `--scale <n>` (`-s`) CLI flag to override pack scale at launch.
+- Added: scale-aware rendering and window sizing across rasterization, hit detection, and compositing.
+- Improved: documentation for desktop support status, scale configuration, and CLI examples.
 - Breaking changes: none.
 
 ## Assets to Upload
 - waypenguin-daemon-linux-x86_64
 - waypenguin-daemon-linux-arm64
-- waypenguin-daemon-0.2.1-linux-x86_64.tar.gz
-- waypenguin-daemon-0.2.1-linux-arm64.tar.gz
-- waypenguin_0.2.1_amd64.deb
-- waypenguin_0.2.1_arm64.deb
-- waypenguin-daemon-0.2.1-1.x86_64.rpm
-- waypenguin-daemon-0.2.1-1.aarch64.rpm
+- waypenguin-daemon-0.3.0-linux-x86_64.tar.gz
+- waypenguin-daemon-0.3.0-linux-arm64.tar.gz
+- waypenguin_0.3.0_amd64.deb
+- waypenguin_0.3.0_arm64.deb
+- waypenguin-daemon-0.3.0-1.x86_64.rpm
+- waypenguin-daemon-0.3.0-1.aarch64.rpm
 
 ## Build Commands
 - Build all configured release artifacts: ./scripts/build-releases.sh
@@ -36,9 +37,10 @@ v0.2.1 is a patch release focused on movement reliability: reduced bottom freeze
 
 ## Verification Checklist
 - Build script completed successfully for intended architectures.
-- Daemon starts and runs correctly on KDE Plasma Wayland.
-- Pets flee immediately when cursor is directly over them.
-- No prolonged bottom freeze under multi-pet load (example: `-n 13`).
+- Daemon starts and runs correctly on KDE Plasma and COSMIC Wayland sessions.
+- `--scale` works as expected (examples: `--scale 0.5`, `--scale 2.0`).
+- `pack.toml` `scale` default is applied when `--scale` is not passed.
+- CLI `--scale` overrides `pack.toml` scale when both are defined.
 - All uploaded artifact names match this document.
 - GitHub release body copied from this file and published.
 

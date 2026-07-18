@@ -325,7 +325,11 @@ fn main() {
     // Discover and load the selected pack to get its scale
     let pack_scale = waypenguin_assets::discover_packs()
         .into_iter()
-        .find(|p| args.pack.as_ref().map_or(p.info.id == "tux-alpha", |id| p.info.id == *id))
+        .find(|p| {
+            args.pack
+                .as_ref()
+                .map_or(p.info.id == "tux-alpha", |id| p.info.id == *id)
+        })
         .map(|p| p.info.scale)
         .unwrap_or(1.0);
 

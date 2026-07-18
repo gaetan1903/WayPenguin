@@ -2,20 +2,21 @@
 
 > A modern, native Wayland desktop pet — lightweight, GPU-accelerated, and built in Rust.
 
-Tux the penguin walks, runs, sleeps, and follows your cursor on KDE Plasma 6, with zero desktop interference.
+Tux the penguin walks, runs, sleeps, and follows your cursor on KDE Plasma 6 and COSMIC, with zero desktop interference.
 
 **Status Badges:**
 
 | Desktop Support | Status |
 |---|---|
 | **KDE Plasma 6** | ✓ Working |
+| **COSMIC** | ✓ Working (new) |
 | **GNOME** | Planned (help wanted) |
 | **Hyprland** | Planned |
 | **Sway** | Planned |
 
 | Project Status | Value |
 |---|---|
-| **Version** | v0.2.1 |
+| **Version** | v0.3.0 |
 | **Maturity** | Alpha |
 | **Language** | Rust (edition 2021) |
 | **License** | MIT |
@@ -31,7 +32,7 @@ Tux the penguin walks, runs, sleeps, and follows your cursor on KDE Plasma 6, wi
 - **HiDPI** — respects output scale factors
 - **Lightweight** — `< 20 MB RAM`, `< 1% CPU`, no Electron, no Qt, no GTK
 - **Procedural asset** — Tux is generated in code; no external files needed
-- **Backend abstraction** — KDE Plasma works now; GNOME, Hyprland, Sway are prepared
+- **Backend abstraction** — KDE Plasma and COSMIC work now; GNOME, Hyprland, Sway are prepared
 
 ---
 
@@ -42,7 +43,7 @@ Tux the penguin walks, runs, sleeps, and follows your cursor on KDE Plasma 6, wi
 ## Quick start
 
 ```bash
-# Build and run the daemon on KDE Plasma 6 (Wayland session)
+# Build and run the daemon on (Wayland session)
 cargo run --bin waypenguin-daemon
 ```
 
@@ -167,7 +168,7 @@ Download the new executable and repeat steps 2-3.
 
 ### Requirements
 
-- Linux with a **KDE Plasma 6** Wayland session (KWin)
+- Linux with a **KDE Plasma 6** (KWin) or **COSMIC** Wayland session
 - Rust toolchain (edition 2021)
 - `libwayland-client`, `libwayland-cursor`, `libxkbcommon`
 
@@ -180,6 +181,7 @@ waypenguin-core/          # Types, AI engine, animation state machine
 waypenguin-renderer/      # Pixel rendering & frame compositing
 waypenguin-backends/      # DesktopBackend / DesktopWindow traits
   kde/                # KDE/KWin backend (functional)
+  cosmic/             # COSMIC backend (functional)
   gnome/              # GNOME/Mutter backend (stub, ready for implementation)
   hyprland/           # Hyprland backend (stub, ready for implementation)
 waypenguin-assets/        # Procedural spritesheet generation (Tux)
