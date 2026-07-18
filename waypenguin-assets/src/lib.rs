@@ -138,7 +138,7 @@ impl PetPack {
                 version: manifest.pack.version,
                 description: manifest.pack.description,
                 builtin,
-                scale: manifest.pack.scale.unwrap_or(1.0).max(0.1).min(3.0),
+                scale: manifest.pack.scale.unwrap_or(1.0).clamp(0.1, 3.0),
             },
             activities,
         })

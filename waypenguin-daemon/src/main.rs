@@ -190,7 +190,7 @@ fn parse_args() -> Args {
             }
             "-s" | "--scale" => {
                 if let Some(s) = raw.get(i + 1).and_then(|s| s.parse::<f32>().ok()) {
-                    args.scale = Some(s.max(0.1).min(3.0));
+                    args.scale = Some(s.clamp(0.1, 3.0));
                     i += 1;
                 }
             }
