@@ -272,22 +272,31 @@ fn main() {
             println!("Initialized GNOME Wayland backend");
             Box::new(b)
         }
-        Err(_) => match KdeBackend::new() {
-            Ok(b) => {
-                println!("Initialized KDE Wayland backend");
-                Box::new(b)
-            }
-            Err(_) => match CosmicBackend::new() {
+        Err(gnome_err) => {
+            eprintln!("GNOME backend unavailable ({:?}), trying KDE", gnome_err);
+            match KdeBackend::new() {
                 Ok(b) => {
-                    println!("Initialized COSMIC Wayland backend");
+                    println!("Initialized KDE Wayland backend");
                     Box::new(b)
                 }
-                Err(e) => {
-                    eprintln!("Failed to initialize any Wayland backend: {:?}", e);
-                    std::process::exit(1);
+                Err(kde_err) => {
+                    eprintln!("KDE backend unavailable ({:?}), trying COSMIC", kde_err);
+                    match CosmicBackend::new() {
+                        Ok(b) => {
+                            println!("Initialized COSMIC Wayland backend");
+                            Box::new(b)
+                        }
+                        Err(cosmic_err) => {
+                            eprintln!(
+                                "Failed to initialize any Wayland backend: GNOME({:?}), KDE({:?}), COSMIC({:?})",
+                                gnome_err, kde_err, cosmic_err
+                            );
+                            std::process::exit(1);
+                        }
+                    }
                 }
-            },
-        },
+            }
+        }
     };
 
     let screens = backend.get_screens();
