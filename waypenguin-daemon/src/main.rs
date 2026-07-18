@@ -3,6 +3,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 use waypenguin_backends::DesktopBackend;
 use waypenguin_core::{AnimationFrame, Pet, PetState};
+use waypenguin_cosmic::CosmicBackend;
 use waypenguin_gnome::GnomeBackend;
 use waypenguin_kde::KdeBackend;
 
@@ -282,16 +283,31 @@ fn main() {
             println!("Initialized GNOME Wayland backend");
             Box::new(b)
         }
-        Err(_) => match KdeBackend::new() {
-            Ok(b) => {
-                println!("Initialized KDE Wayland backend");
-                Box::new(b)
+        Err(gnome_err) => {
+            eprintln!("GNOME backend unavailable ({:?}), trying KDE", gnome_err);
+            match KdeBackend::new() {
+                Ok(b) => {
+                    println!("Initialized KDE Wayland backend");
+                    Box::new(b)
+                }
+                Err(kde_err) => {
+                    eprintln!("KDE backend unavailable ({:?}), trying COSMIC", kde_err);
+                    match CosmicBackend::new() {
+                        Ok(b) => {
+                            println!("Initialized COSMIC Wayland backend");
+                            Box::new(b)
+                        }
+                        Err(cosmic_err) => {
+                            eprintln!(
+                                "Failed to initialize any Wayland backend: GNOME({:?}), KDE({:?}), COSMIC({:?})",
+                                gnome_err, kde_err, cosmic_err
+                            );
+                            std::process::exit(1);
+                        }
+                    }
+                }
             }
-            Err(e) => {
-                eprintln!("Failed to initialize any Wayland backend: {:?}", e);
-                std::process::exit(1);
-            }
-        },
+        }
     };
 
     let screens = backend.get_screens();

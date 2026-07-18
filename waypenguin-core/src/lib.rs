@@ -803,9 +803,8 @@ impl Pet {
                             let rx = self.screen_w - 2.0 * margin - self.width;
                             // Candidates: random positions + both corners so pets fill
                             // all edges rather than clustering on one side.
-                            let mut candidates: Vec<f32> = (0..6)
-                                .map(|_| margin + fastrand::f32() * rx)
-                                .collect();
+                            let mut candidates: Vec<f32> =
+                                (0..6).map(|_| margin + fastrand::f32() * rx).collect();
                             candidates.push(margin);
                             candidates.push(self.screen_w - self.width - margin);
                             // Pick the candidate farthest from all other pets.
@@ -926,9 +925,8 @@ impl Pet {
             if self.grounded && (self.y - self.floor_y).abs() < 2.0 && self.idle_time_ms > 4500 {
                 let margin = 40.0;
                 let rx = self.screen_w - 2.0 * margin - self.width;
-                let mut candidates: Vec<f32> = (0..5)
-                    .map(|_| margin + fastrand::f32() * rx)
-                    .collect();
+                let mut candidates: Vec<f32> =
+                    (0..5).map(|_| margin + fastrand::f32() * rx).collect();
                 candidates.push(margin);
                 candidates.push(self.screen_w - self.width - margin);
 

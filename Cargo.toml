@@ -7,6 +7,7 @@ members = [
     "waypenguin-backends/kde",
     "waypenguin-backends/gnome",
     "waypenguin-backends/hyprland",
+    "waypenguin-backends/cosmic",
     "waypenguin-assets",
     "waypenguin-cli",
     "waypenguin-settings",
