@@ -510,6 +510,10 @@ impl FrameBuffer {
 
 impl Drop for FrameBuffer {
     fn drop(&mut self) {
+        // SAFETY: `buffer` is wrapped in `ManuallyDrop` so we must explicitly run its destructor
+        // to destroy the underlying `wl_buffer` proxy. `FrameBuffer` owns `buffer`, so dropping it
+        // here is correct and occurs before the parent `SlotPool` is dropped (see field order in
+        // `CosmicWindow`).
         unsafe {
             ManuallyDrop::drop(&mut self.buffer);
         }
