@@ -59,6 +59,7 @@ waypenguin-daemon [OPTIONS]
 | `--count <N>` | `-n` | `5` | Number of pets to spawn (1–50) |
 | `--pack <id>` | `-p` | *(built-in default)* | Pet pack to use, by pack ID |
 | `--data <path>` | `-d` | *(XDG data dir)* | Custom path to the pets directory |
+| `--scale <N>` | `-s` | *(pack default)* | Pet size multiplier (0.1–3.0) |
 | `--list` | `-l` | — | List all discovered packs and exit |
 
 ### Examples
@@ -72,6 +73,12 @@ waypenguin-daemon --list
 
 # Use a custom pets folder
 waypenguin-daemon --data ~/.local/share/my-pets --pack my-custom-pack
+
+# Spawn pets at 50% smaller scale
+waypenguin-daemon --scale 0.5
+
+# Spawn pets at 2x size
+waypenguin-daemon --scale 2.0
 ```
 
 ---

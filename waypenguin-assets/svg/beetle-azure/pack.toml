@@ -9,6 +9,7 @@ author      = "WayPenguin"
 license     = "CC-BY-SA-4.0"
 version     = "1.0.0"
 description = "Cyberpunk black beetle with glowing cyan eyes."
+scale       = 1.0
 
 [activities]
 walker   = "walker.svg"

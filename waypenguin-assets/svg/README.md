@@ -29,6 +29,7 @@ author      = "you"
 license     = "CC-BY-SA-4.0"
 version     = "1.0.0"
 description = "A short blurb."
+scale       = 1.0             # optional: pet size multiplier (0.1–3.0, default: 1.0)
 
 [activities]
 walker   = "walker.svg"       # required — used as the fallback for omitted activities
@@ -40,6 +41,15 @@ action0  = "action0.svg"
 angel    = "angel.svg"
 splatted = "splatted.svg"
 ```
+
+### Configuration
+
+#### `scale` (optional, default: 1.0)
+
+Controls the pet's window size and rendered texture scale. The base pet size is 90 pixels;
+a `scale` of 1.5 renders a 135×135 px pet, while 0.7 renders 63×63 px.
+
+**Valid range:** 0.1–3.0. Values outside this range are clamped.
 
 ## Drawing the SVGs
 
@@ -139,6 +149,7 @@ Each thumbnail shows the `walker` pose (the default / fallback activity).
 | `--pack <id>` | `-p` | Run with a specific pack |
 | `--data <path>` | `-d` | Set the packs directory to scan |
 | `--count <n>` | `-n` | Number of pet instances (default: 5) |
+| `--scale <n>` | `-s` | Pet size multiplier (0.1–3.0, overrides pack scale) |
 
 ```sh
 # list all packs compiled in (or found in the user packs dir)
@@ -146,6 +157,12 @@ waypenguin-daemon --list
 
 # run with the jade beetle
 waypenguin-daemon --pack beetle-jade
+
+# run with 50% smaller pets
+waypenguin-daemon --scale 0.5
+
+# run with 2x larger pets
+waypenguin-daemon --scale 2.0
 
 # list packs from a custom directory
 waypenguin-daemon --data /path/to/my/packs --list

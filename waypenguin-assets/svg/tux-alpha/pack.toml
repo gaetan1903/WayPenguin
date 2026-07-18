@@ -9,6 +9,7 @@ author      = "WayPenguin"
 license     = "CC-BY-SA-4.0"
 version     = "1.0.0"
 description = "The classic Linux mascot, hand-drawn as clean vector poses."
+scale       = 1.0                         # optional: pet size multiplier (0.1-3.0, default: 1.0)
 
 # Map each activity to an SVG file in this directory.
 # Every SVG should use a square `0 0 100 100` viewBox and transparent background.

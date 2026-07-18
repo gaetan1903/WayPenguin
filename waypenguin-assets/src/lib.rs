@@ -50,6 +50,8 @@ struct PackMeta {
     version: String,
     #[serde(default)]
     description: String,
+    #[serde(default)]
+    scale: Option<f32>,
 }
 
 // ---------------------------------------------------------------------------
@@ -90,6 +92,8 @@ pub struct PackInfo {
     pub description: String,
     /// `true` for the embedded default pack, `false` for user packs on disk.
     pub builtin: bool,
+    /// Scale multiplier for pet size (default: 1.0).
+    pub scale: f32,
 }
 
 /// A loaded pet pack: metadata plus each activity's SVG source.
@@ -134,6 +138,7 @@ impl PetPack {
                 version: manifest.pack.version,
                 description: manifest.pack.description,
                 builtin,
+                scale: manifest.pack.scale.unwrap_or(1.0).max(0.1).min(3.0),
             },
             activities,
         })

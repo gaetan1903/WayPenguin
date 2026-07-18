@@ -22,7 +22,8 @@ struct ThemeRenderer {
 }
 
 impl ThemeRenderer {
-    fn load() -> Option<Self> {
+    fn load(scale: f32) -> Option<Self> {
+        let scaled_size = (PET_SIZE as f32 * scale) as u32;
         let activity_names = [
             "action0", "walker", "climber", "faller", "tumbler", "floater", "splatted", "angel",
         ];
@@ -34,7 +35,7 @@ impl ThemeRenderer {
             // Rasterise the vector pose directly at display size — no
             // nearest-neighbor upscale, so the art stays crisp.
             let (frames, frame_w, frame_h) =
-                waypenguin_assets::get_activity_frames(name, PET_SIZE)?;
+                waypenguin_assets::get_activity_frames(name, scaled_size)?;
 
             let frame_count = frames.len();
 
@@ -153,6 +154,7 @@ struct Args {
     pack: Option<String>,
     data_dir: Option<String>,
     list_packs: bool,
+    scale: Option<f32>,
 }
 
 fn parse_args() -> Args {
@@ -162,6 +164,7 @@ fn parse_args() -> Args {
         pack: None,
         data_dir: None,
         list_packs: false,
+        scale: None,
     };
     let mut i = 1;
     while i < raw.len() {
@@ -185,6 +188,12 @@ fn parse_args() -> Args {
                     i += 1;
                 }
             }
+            "-s" | "--scale" => {
+                if let Some(s) = raw.get(i + 1).and_then(|s| s.parse::<f32>().ok()) {
+                    args.scale = Some(s.max(0.1).min(3.0));
+                    i += 1;
+                }
+            }
             _ => {}
         }
         i += 1;
@@ -203,27 +212,29 @@ fn spawn_pets(
     count: u32,
     screen_w: f32,
     screen_h: f32,
+    scale: f32,
 ) -> Vec<PetInstance> {
+    let scaled_size = (PET_SIZE as f32 * scale) as u32;
     let spacing = screen_w / (count + 1) as f32;
     let mut instances = Vec::new();
 
     for i in 0..count {
-        let x = spacing * (i + 1) as f32 - (PET_SIZE as f32 / 2.0);
+        let x = spacing * (i + 1) as f32 - (scaled_size as f32 / 2.0);
         let window_y = -40 - (i as i32 * 20);
 
         let window = backend
-            .create_window(PET_SIZE, PET_SIZE, x as i32, window_y)
+            .create_window(scaled_size, scaled_size, x as i32, window_y)
             .expect("Failed to create pet window");
 
         let mut pet = Pet::new_falling(x, screen_w, screen_h);
-        pet.width = PET_SIZE as f32;
+        pet.width = scaled_size as f32;
         pet.vx = (i as f32 - count as f32 / 2.0) * 0.3;
         pet.idle_time_ms = i * 3000;
 
         instances.push(PetInstance {
             pet,
             window,
-            frame_buffer: vec![0u32; (PET_SIZE * PET_SIZE) as usize],
+            frame_buffer: vec![0u32; (scaled_size * scaled_size) as usize],
         });
     }
 
@@ -295,8 +306,20 @@ fn main() {
         (1920.0, 1080.0)
     };
 
-    let theme_renderer = ThemeRenderer::load();
-    let mut pets = spawn_pets(backend.as_mut(), pet_count, screen_w, screen_h);
+    // Discover and load the selected pack to get its scale
+    let pack_scale = waypenguin_assets::discover_packs()
+        .into_iter()
+        .find(|p| args.pack.as_ref().map_or(p.info.id == "tux-alpha", |id| p.info.id == *id))
+        .map(|p| p.info.scale)
+        .unwrap_or(1.0);
+
+    // Command-line scale overrides pack scale
+    let final_scale = args.scale.unwrap_or(pack_scale);
+
+    let scaled_size = (PET_SIZE as f32 * final_scale) as u32;
+
+    let theme_renderer = ThemeRenderer::load(final_scale);
+    let mut pets = spawn_pets(backend.as_mut(), pet_count, screen_w, screen_h, final_scale);
 
     println!("Starting main event loop...");
     let mut last_tick = Instant::now();
@@ -352,7 +375,7 @@ fn main() {
                 if let Some((cx, cy)) = last_click {
                     let px = instance.pet.x as i32;
                     let py = instance.pet.y as i32;
-                    let ps = PET_SIZE as i32;
+                    let ps = scaled_size as i32;
                     if cx >= px && cx < px + ps && cy >= py && cy < py + ps {
                         instance.pet.squish();
                     }
@@ -366,6 +389,7 @@ fn main() {
                     let sheet = svg.activity_sheet(activity);
                     (frames, &sheet.pixels[..], sheet.sheet_w, sheet.sheet_h)
                 } else {
+                    let fallback_size = scaled_size as u32;
                     static NO_FRAMES: &[AnimationFrame] = &[AnimationFrame {
                         x: 0,
                         y: 0,
@@ -373,7 +397,7 @@ fn main() {
                         height: 90,
                     }];
                     static NO_PIXELS: &[u32] = &[0u32; 8100];
-                    (NO_FRAMES, NO_PIXELS, 90u32, 90u32)
+                    (NO_FRAMES, NO_PIXELS, fallback_size, fallback_size)
                 };
 
                 // Compute frame index directly — no AnimationSpec allocation
@@ -424,8 +448,8 @@ fn main() {
                 if shadow_opacity > 0.01 {
                     waypenguin_renderer::render_contact_shadow(
                         &mut instance.frame_buffer,
-                        PET_SIZE,
-                        PET_SIZE,
+                        scaled_size,
+                        scaled_size,
                         0.55 + run_stretch,
                         0.06,
                         shadow_opacity,
@@ -443,8 +467,8 @@ fn main() {
                     0
                 };
 
-                let off_x = ((PET_SIZE as i32 - frame.width as i32) / 2).max(0);
-                let off_y = breath_y + ((PET_SIZE as i32 - frame.height as i32) / 2).max(0);
+                let off_x = ((scaled_size as i32 - frame.width as i32) / 2).max(0);
+                let off_y = breath_y + ((scaled_size as i32 - frame.height as i32) / 2).max(0);
 
                 waypenguin_renderer::composite_frame(
                     src_pixels,
@@ -452,8 +476,8 @@ fn main() {
                     src_h,
                     frame,
                     &mut instance.frame_buffer,
-                    PET_SIZE,
-                    PET_SIZE,
+                    scaled_size,
+                    scaled_size,
                     instance.pet.facing_left,
                     off_x,
                     off_y,
