@@ -483,6 +483,10 @@ pub struct CosmicWindow {
 
 struct FrameBuffer {
     buffer: ManuallyDrop<SctkBuffer>,
+    // Pointer + length into the SlotPool's mmap'd SHM memory.
+    // SAFETY: this pointer is valid for the lifetime of the SlotPool
+    // (which outlives CosmicWindow since pool stays in CosmicWindow).
+    // We only write from the main thread, single-threaded.
     canvas_ptr: *mut u8,
     canvas_len: usize,
 }
